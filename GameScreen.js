@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, SafeAreaView } from 'react-native';
 
 export default function GameScreen({ route, navigation }) {
   const { local, visitante } = route.params;
 
-  // <ESTADO DE PUNTUACION INDIVIDUAL POR JUGADOR>
+  // Estado para puntos individuales
   const [playerScores, setPlayerScores] = useState({});
 
-  // <LOGICA DE PUNTUACION>
   const sumarPuntos = (playerName, puntos) => {
     setPlayerScores(prev => ({
       ...prev,
@@ -15,12 +14,10 @@ export default function GameScreen({ route, navigation }) {
     }));
   };
 
-  // <CALCULO DE MARCADORES TOTALES>
   const totalLocal = local.players.reduce((sum, p) => sum + (playerScores[p] || 0), 0);
   const totalVisitante = visitante.players.reduce((sum, p) => sum + (playerScores[p] || 0), 0);
 
   const finalizarPartido = () => {
-    // <PREPARAR DATOS DE ESTADISTICAS PARA LA SIGUIENTE PANTALLA>
     const allPlayers = [
       ...local.players.map(p => ({ name: p, score: playerScores[p] || 0, team: local.name })),
       ...visitante.players.map(p => ({ name: p, score: playerScores[p] || 0, team: visitante.name }))
@@ -36,90 +33,82 @@ export default function GameScreen({ route, navigation }) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <Text style={styles.matchTitle}>MATCH START</Text>
-      
-      {/* <SECCION MARCADOR CENTRAL> */}
-      <View style={styles.scoreRow}>
-        <View style={styles.team}>
-          <Image source={{ uri: local.logo }} style={styles.matchLogo} />
-          <Text style={styles.name}>{local.name.toUpperCase()}</Text>
-          <Text style={styles.score}>{totalLocal.toString().padStart(2, '0')}</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <Text style={styles.matchTitle}>LIVE GAME</Text>
+        
+        <View style={styles.scoreRow}>
+          <View style={styles.teamContainer}>
+            <Image source={{ uri: local.logo }} style={styles.matchLogo} />
+            <Text style={styles.scoreText}>{totalLocal}</Text>
+          </View>
+          <Text style={styles.vs}>VS</Text>
+          <View style={styles.teamContainer}>
+            <Image source={{ uri: visitante.logo }} style={styles.matchLogo} />
+            <Text style={styles.scoreText}>{totalVisitante}</Text>
+          </View>
         </View>
-        <Text style={styles.vs}>VS</Text>
-        <View style={styles.team}>
-          <Image source={{ uri: visitante.logo }} style={styles.matchLogo} />
-          <Text style={styles.name}>{visitante.name.toUpperCase()}</Text>
-          <Text style={styles.score}>{totalVisitante.toString().padStart(2, '0')}</Text>
-        </View>
-      </View>
 
-      {/* <SECCION DE ROSTERS> */}
-      <View style={styles.rostersContainer}>
-        <View style={styles.rosterBox}>
-          <Text style={styles.rosterTitle}>[ {local.name.toUpperCase()} ]</Text>
-          {local.players.map((player, index) => (
-            <View key={index} style={styles.playerCard}>
-              <Text style={styles.playerNameGame}>{player.toUpperCase()}</Text>
-              <Text style={styles.individualScore}>PTS: {playerScores[player] || 0}</Text>
-              <View style={styles.buttonRow}>
-                <TouchableOpacity style={styles.pointBtn} onPress={() => sumarPuntos(player, 2)}>
-                  <Text style={styles.pointBtnText}>+2</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.pointBtn, styles.threeBtn]} onPress={() => sumarPuntos(player, 3)}>
-                  <Text style={styles.pointBtnText}>+3</Text>
-                </TouchableOpacity>
+        <View style={styles.rostersWrapper}>
+          {/* LOCAL */}
+          <View style={styles.rosterColumn}>
+            <Text style={styles.teamNameLabel}>{local.name}</Text>
+            {local.players.map((p, i) => (
+              <View key={i} style={styles.playerRow}>
+                <Text style={styles.pName}>{p.split(' ').pop()}</Text>
+                <Text style={styles.pPts}>{playerScores[p] || 0} PTS</Text>
+                <View style={styles.btnGroup}>
+                  <TouchableOpacity style={styles.btn} onPress={() => sumarPuntos(p, 2)}><Text style={styles.btnT}>+2</Text></TouchableOpacity>
+                  <TouchableOpacity style={[styles.btn, styles.btn3]} onPress={() => sumarPuntos(p, 3)}><Text style={styles.btnT}>+3</Text></TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
 
-        <View style={styles.rosterBox}>
-          <Text style={styles.rosterTitle}>[ {visitante.name.toUpperCase()} ]</Text>
-          {visitante.players.map((player, index) => (
-            <View key={index} style={styles.playerCard}>
-              <Text style={styles.playerNameGame}>{player.toUpperCase()}</Text>
-              <Text style={styles.individualScore}>PTS: {playerScores[player] || 0}</Text>
-              <View style={styles.buttonRow}>
-                <TouchableOpacity style={styles.pointBtn} onPress={() => sumarPuntos(player, 2)}>
-                  <Text style={styles.pointBtnText}>+2</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.pointBtn, styles.threeBtn]} onPress={() => sumarPuntos(player, 3)}>
-                  <Text style={styles.pointBtnText}>+3</Text>
-                </TouchableOpacity>
+          {/* VISITANTE */}
+          <View style={styles.rosterColumn}>
+            <Text style={styles.teamNameLabel}>{visitante.name}</Text>
+            {visitante.players.map((p, i) => (
+              <View key={i} style={styles.playerRow}>
+                <Text style={styles.pName}>{p.split(' ').pop()}</Text>
+                <Text style={styles.pPts}>{playerScores[p] || 0} PTS</Text>
+                <View style={styles.btnGroup}>
+                  <TouchableOpacity style={styles.btn} onPress={() => sumarPuntos(p, 2)}><Text style={styles.btnT}>+2</Text></TouchableOpacity>
+                  <TouchableOpacity style={[styles.btn, styles.btn3]} onPress={() => sumarPuntos(p, 3)}><Text style={styles.btnT}>+3</Text></TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
 
-      <TouchableOpacity style={styles.finishBtn} onPress={finalizarPartido}>
-        <Text style={styles.finishBtnText}>FINISH GAME</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <TouchableOpacity style={styles.finishBtn} onPress={finalizarPartido}>
+          <Text style={styles.finishBtnText}>FINISH GAME</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
-  contentContainer: { alignItems: 'center', paddingVertical: 40 },
-  matchTitle: { color: '#fff', fontSize: 32, fontWeight: '900', marginBottom: 20, textShadowColor: '#ff4444', textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 1 },
+  safeArea: { flex: 1, backgroundColor: '#000' },
+  container: { flex: 1 },
+  contentContainer: { alignItems: 'center', paddingVertical: 20 },
+  matchTitle: { color: '#fff', fontSize: 28, fontWeight: '900', marginBottom: 20, fontStyle: 'italic' },
   scoreRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 30 },
-  team: { alignItems: 'center', marginHorizontal: 10 },
-  matchLogo: { width: 80, height: 80, resizeMode: 'contain' },
-  name: { color: '#FFD700', fontSize: 14, fontWeight: 'bold', marginTop: 10 },
-  score: { color: '#fff', fontSize: 60, fontWeight: '900', textShadowColor: '#00f2ff', textShadowRadius: 10 },
-  vs: { color: '#ff4444', fontSize: 24, fontWeight: '900', fontStyle: 'italic' },
-  rostersContainer: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', paddingHorizontal: 5 },
-  rosterBox: { width: '48%' },
-  rosterTitle: { color: '#FFD700', fontSize: 12, fontWeight: '900', marginBottom: 10, textAlign: 'center' },
-  playerCard: { backgroundColor: '#1a1a1a', marginBottom: 8, padding: 8, borderLeftWidth: 4, borderLeftColor: '#ff4444' },
-  playerNameGame: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
-  individualScore: { color: '#00f2ff', fontSize: 9, marginBottom: 5, fontWeight: 'bold' },
-  buttonRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  pointBtn: { backgroundColor: '#333', padding: 5, width: '45%', alignItems: 'center', borderWidth: 1, borderColor: '#555' },
-  threeBtn: { borderColor: '#FFD700' },
-  pointBtnText: { color: '#fff', fontSize: 10, fontWeight: '900' },
-  finishBtn: { backgroundColor: '#FFD700', padding: 15, width: '80%', marginTop: 30, alignItems: 'center', borderWidth: 3, borderColor: '#fff' },
+  teamContainer: { alignItems: 'center', marginHorizontal: 20 },
+  matchLogo: { width: 70, height: 70, resizeMode: 'contain' },
+  scoreText: { color: '#fff', fontSize: 50, fontWeight: '900', textShadowColor: '#00f2ff', textShadowRadius: 10 },
+  vs: { color: '#ff4444', fontSize: 24, fontWeight: '900' },
+  rostersWrapper: { flexDirection: 'row', width: '95%', justifyContent: 'space-between' },
+  rosterColumn: { width: '48%' },
+  teamNameLabel: { color: '#FFD700', fontWeight: '900', textAlign: 'center', marginBottom: 10, fontSize: 14 },
+  playerRow: { backgroundColor: '#1a1a1a', padding: 8, marginBottom: 5, borderLeftWidth: 3, borderLeftColor: '#ff4444' },
+  pName: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
+  pPts: { color: '#00f2ff', fontSize: 10, marginBottom: 5 },
+  btnGroup: { flexDirection: 'row', justifyContent: 'space-between' },
+  btn: { backgroundColor: '#333', padding: 5, width: '45%', alignItems: 'center' },
+  btn3: { borderColor: '#FFD700', borderWidth: 1 },
+  btnT: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
+  finishBtn: { backgroundColor: '#FFD700', padding: 15, width: '85%', marginTop: 20, alignItems: 'center' },
   finishBtnText: { color: '#000', fontWeight: '900', fontSize: 18 }
 });
